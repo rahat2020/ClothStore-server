@@ -2,9 +2,9 @@ const express = require('express')
 const MongoClient = require('mongodb').MongoClient;
 const app = express()
 const cors = require('cors')
+const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config()
 const port = process.env.PORT || 5000
-
 app.use(cors())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
@@ -55,7 +55,7 @@ client.connect(err => {
                 res.send(documents)
             })
     })
-    // oder collection submit to the database
+    // add to cart product submit to the database
     app.post('/itemOrdered', (req, res)=>{
         const item = req.body
         orderCollection.insertOne(item)
@@ -65,13 +65,23 @@ client.connect(err => {
         })
 
     })
-    // item order showing to the order page 
-    app.get('/finalOrder', (req, res) =>{
-        orderCollection.find()
-        .toArray((err, documents) =>{
+    // showing buy now product to the checkout page
+    app.get('/products/:id', (req, res) => {
+        const id = req.params.id;
+        productCollection.find({ _id: ObjectId(id) })
+            .toArray((err, documents) => {
+                res.send(documents[0]);
+            })
+    })
+
+    // checkout items showing to the order page
+    app.get('/orderedItem', (req, res) => {
+        orderCollection.find({email: req.query.email})
+        .toArray((err, documents) => {
             res.send(documents)
         })
     })
+   
     // perform actions on the collection object
     console.log('database connected succesfully')
 });
