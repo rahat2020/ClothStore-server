@@ -19,6 +19,7 @@ client.connect(err => {
     const productCollection = client.db("clothStore").collection("items");
     const reviewCollection = client.db("clothStore").collection("review");
     const orderCollection = client.db("clothStore").collection("order");
+    const adminCollection = client.db("clothStore").collection("admin");
 
     //   uploading product data to the database
     app.post('/addProduct', (req, res) => {
@@ -82,6 +83,31 @@ client.connect(err => {
         })
     })
    
+    // adding admin to the database
+    app.post('/addAdmin', (req, res) => {
+        const isAdmin = req.body;
+        adminCollection.insertOne(isAdmin)
+        .then((result) => {
+            res.send(result.insertedCount > 0)
+            console.log(result.insertedCount > 0)
+        })
+    })
+
+    // only admin can edit the this page
+    app.post('/ifAdminThen', (req, res) => {
+        const email = req.body.email
+        adminCollection.find({ email: email})
+        .toArray((err, admin) => {
+            res.send(admin.length > 0);
+        })
+    })
+    // showing admin to the UI 
+    app.get('/showAdmin', (req, res) => {
+        adminCollection.find({id : req.params._id})
+        .toArray((err, documents) => {
+            res.send(documents)
+        })
+    })
     // perform actions on the collection object
     console.log('database connected succesfully')
 });
